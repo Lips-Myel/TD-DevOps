@@ -120,7 +120,7 @@ jobs:
 
       - name: Health Check
         run: |
-          for i in {1..5}; do curl -f https://staging.example.com/ && break || sleep 10; done || exit 1
+          for i in {1..5}; do curl -f https://$PWD-3000.direct.labs.play-with-docker.com && break || sleep 10; done || exit 1
 
   deploy:
     name: Deploy to Production
@@ -149,4 +149,4 @@ jobs:
 
       - name: Health Check
         run: |
-          for i in {1..5}; do curl -f https://production.example.com/ && break || sleep 10; done || exit 1
+          for i in {1..5}; do curl -f https://$PWD-3000.direct.labs.play-with-docker.com / && break || sleep 10; done || exit 1
