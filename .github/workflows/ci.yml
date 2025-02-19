@@ -124,7 +124,7 @@ jobs:
         env:
           SERVICE_URL: "https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
         run: |
-          for i in {1..5}; do curl -f "$SERVICE_URL" && break || sleep 10; done || exit 1
+          for i in {1..5}; do curl -k -f "$SERVICE_URL" && break || sleep 10; done || exit 1
 
   deploy:
     name: Deploy to Production
@@ -157,4 +157,4 @@ jobs:
         env:
           SERVICE_URL: "https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
         run: 
-          for i in {1..5}; do curl -f "$SERVICE_URL" && break || sleep 10; done || exit 1
+          for i in {1..5}; do curl -k -f "$SERVICE_URL" && break || sleep 10; done || exit 1
