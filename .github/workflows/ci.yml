@@ -1,0 +1,27 @@
+stages:
+  - build
+  - test
+
+build_job:
+  stage: build
+  image: node:20.9-alpine
+  script:
+    - npm install
+  artifacts:
+    paths:
+    - node_modules/
+    expire_in: 2hrs
+     
+test_job:
+  stage: test
+  needs: 
+  - build_job
+  image: node:20.9-alpine
+  script:
+    - chmod +x node_modules/.bin/jest  # Corriger les permissions
+    - npx jest
+
+  artifacts:
+    reports:
+      junit: test-results.xml
+    expire_in: 1 day
