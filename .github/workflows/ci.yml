@@ -120,8 +120,8 @@ jobs:
 
       - name: Health Check
         run: |
-          for i in {1..5}; do curl -f https://$PWD-3000.direct.labs.play-with-docker.com && break || sleep 10; done || exit 1
-
+          SERVICE_URL="https://${{ secrets.PWD }}-3000.direct.labs.play-with-docker.com"
+          for i in {1..5}; do curl -f "$SERVICE_URL" && break || sleep 10; done || exit 1
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
@@ -149,4 +149,5 @@ jobs:
 
       - name: Health Check
         run: |
-          for i in {1..5}; do curl -f https://$PWD-3000.direct.labs.play-with-docker.com / && break || sleep 10; done || exit 1
+          SERVICE_URL="https://${{ secrets.PWD }}-3000.direct.labs.play-with-docker.com"
+          for i in {1..5}; do curl -f "$SERVICE_URL" && break || sleep 10; done || exit 1
