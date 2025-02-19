@@ -121,10 +121,8 @@ jobs:
         run: docker logs td-devops_app_1 || true
 
       - name: Health Check
-        env:
-          SERVICE_URL: "http://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
         run: |
-          for i in {1..5}; do curl -k -f "$SERVICE_URL" && break || sleep 10; done || exit 1
+            for i in {1..5}; do curl -f https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com / && break || sleep 10; done || exit 1
 
   deploy:
     name: Deploy to Production
@@ -154,7 +152,5 @@ jobs:
         run: docker logs td-devops_app_1 || true
 
       - name: Health Check
-        env:
-          SERVICE_URL: "http://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
-        run: 
-          for i in {1..5}; do curl -k -f "$SERVICE_URL" && break || sleep 10; done || exit 1
+        run: |
+            for i in {1..5}; do curl -f https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com / && break || sleep 10; done || exit 1
