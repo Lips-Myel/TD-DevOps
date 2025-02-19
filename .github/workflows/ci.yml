@@ -1,27 +1,74 @@
-stages:
-  - build
-  - test
+name: CI
 
-build_job:
-  stage: build
-  image: node:20.9-alpine
-  script:
-    - npm install
-  artifacts:
-    paths:
-    - node_modules/
-    expire_in: 2hrs
-     
-test_job:
-  stage: test
-  needs: 
-  - build_job
-  image: node:20.9-alpine
-  script:
-    - chmod +x node_modules/.bin/jest  # Corriger les permissions
-    - npx jest
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 
-  artifacts:
-    reports:
-      junit: test-results.xml
-    expire_in: 1 day
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: node:20.9-alpine
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+  lint:
+    needs: build
+    runs-on: ubuntu-latest
+    container: node:20.9-alpine
+    continue-on-error: true  # Equivalent de allow_failure: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Restore node_modules cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+
+      - name: Fix ESLint permissions
+        run: chmod +x node_modules/.bin/eslint
+
+      - name: Run ESLint
+        run: npm run lint
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    container: node:20.9-alpine
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Restore node_modules cache
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+
+      - name: Fix Jest permissions
+        run: chmod +x node_modules/.bin/jest
+
+      - name: Run tests
+        run: npx jest
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results.xml
+          retention-days: 1
