@@ -120,7 +120,7 @@ jobs:
 
       - name: Health Check
         run: |
-          SERVICE_URL="https://${{ secrets.PWD }}-3000.direct.labs.play-with-docker.com"
+          SERVICE_URL= "${{ secrets.PWD }}"
           for i in {1..5}; do curl -f "$SERVICE_URL" && break || sleep 10; done || exit 1
   deploy:
     name: Deploy to Production
@@ -149,5 +149,5 @@ jobs:
 
       - name: Health Check
         run: |
-          SERVICE_URL="https://${{ secrets.PWD }}-3000.direct.labs.play-with-docker.com"
+          SERVICE_URL= "${{ secrets.PWD }}"
           for i in {1..5}; do curl -f "$SERVICE_URL" && break || sleep 10; done || exit 1
