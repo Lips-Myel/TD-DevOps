@@ -1,23 +1,30 @@
-name: CI
+name: CI Pipeline
 
 on:
   push:
     branches:
       - main
   pull_request:
+    branches:
+      - main
 
 jobs:
   build:
+    name: Build
     runs-on: ubuntu-latest
-    container: node:20.9-alpine
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Install dependencies
         run: npm install
 
-      - name: Cache node_modules
+      - name: Cache dependencies
         uses: actions/cache@v4
         with:
           path: node_modules
@@ -26,49 +33,78 @@ jobs:
             ${{ runner.os }}-node-
 
   lint:
-    needs: build
+    name: ESLint Check
     runs-on: ubuntu-latest
-    container: node:20.9-alpine
-    continue-on-error: true  # Equivalent de allow_failure: true
+    needs: build
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Restore node_modules cache
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Restore dependencies cache
         uses: actions/cache@v4
         with:
           path: node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
-
-      - name: Fix ESLint permissions
-        run: chmod +x node_modules/.bin/eslint
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       - name: Run ESLint
         run: npm run lint
+        continue-on-error: true  # Equivalent de allow_failure: true sur GitLab
 
   test:
-    needs: build
+    name: Run Tests
     runs-on: ubuntu-latest
-    container: node:20.9-alpine
+    needs: build
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Restore node_modules cache
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Restore dependencies cache
         uses: actions/cache@v4
         with:
           path: node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-      - name: Fix Jest permissions
-        run: chmod +x node_modules/.bin/jest
+      - name: Run Jest Tests
+        run: npx jest --ci --reporters=jest-junit
+        env:
+          CI: true
 
-      - name: Run tests
-        run: npx jest
-
-      - name: Upload test results
+      - name: Upload Test Results
         uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: test-results.xml
           retention-days: 1
+
+  package:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build Docker Image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/my-app:latest .
+
+      - name: Push Docker Image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/my-app:latest
