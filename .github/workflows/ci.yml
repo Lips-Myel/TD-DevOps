@@ -122,7 +122,7 @@ jobs:
 
       - name: Health Check
         run: |
-            for i in {1..5}; do curl --tlsv1.3 --cert ./client.crt --key ./client.key -v -k -f https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com && break || sleep 10; done || exit 1
+            for i in {1..5}; do curl --tlsv1.3 --cert client.crt --key client.key.pem -v -k -f https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com && break || sleep 10; done || exit 1
 
   deploy:
     name: Deploy to Production
@@ -153,4 +153,4 @@ jobs:
 
       - name: Health Check
         run: |
-            for i in {1..5}; do curl --tlsv1.3 --cert client.crt --key client.key -v -k -f https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com && break || sleep 10; done || exit 1
+            for i in {1..5}; do curl --tlsv1.3 --cert client.crt --key client.key.pem -v -k -f https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com && break || sleep 10; done || exit 1
