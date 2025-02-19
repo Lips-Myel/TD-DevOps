@@ -110,10 +110,10 @@ jobs:
           docker pull ${{ secrets.DOCKER_USERNAME }}/td-devops:latest
 
       - name: Stop Previous Staging Container
-        run: docker-compose -f docker-compose.staging.yml down || true
+        run: docker-compose -f compose.staging.yml down || true
 
       - name: Start New Staging Container
-        run: docker-compose -f docker-compose.staging.yml up -d
+        run: docker-compose -f compose.staging.yml up -d
 
       - name: Check Logs
         run: docker logs td-devops-app-1 || true
@@ -139,10 +139,10 @@ jobs:
           docker pull ${{ secrets.DOCKER_USERNAME }}/td-devops:latest
 
       - name: Stop Previous Production Container
-        run: docker-compose -f docker-compose.prod.yml down || true
+        run: docker-compose -f compose.prod.yml down || true
 
       - name: Start New Production Container
-        run: docker-compose -f docker-compose.prod.yml up -d
+        run: docker-compose -f compose.prod.yml up -d
 
       - name: Check Logs
         run: docker logs td-devops-app-1 || true
