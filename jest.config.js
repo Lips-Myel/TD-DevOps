@@ -109,7 +109,7 @@ const config = {
   // Use this configuration option to add custom reporters to Jest
   reporters: [
     "default", 
-    ["jest-junit", { outputName: "test.results.xml"}]
+    ["jest-junit", { outputName: "test-results.xml"}]
   ],
 
   // Automatically reset mock state before every test
