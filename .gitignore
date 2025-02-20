@@ -1,2 +1,5 @@
 client.key
 client.key.pem
+client.pem
+client.crt
+client.csr
