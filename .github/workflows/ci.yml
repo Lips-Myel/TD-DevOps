@@ -119,15 +119,10 @@ jobs:
       - name: Check Logs
         run: docker logs td-devops_app_1 || true
 
-      - name: Debug SSL Certificate
-        run: |
-          openssl s_client -connect ${{ vars.PWD }}-3000.direct.labs.play-with-docker.com:443 -showcerts
-
-
       - name: Health Check
         run: |
           for i in {1..5}; do 
-          wget --secure-protocol=TLSv1_2 --no-check-certificate "https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com" && break || sleep 10
+          wget --secure-protocol=TLSv1_2 --no-check-certificate "http://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com" && break || sleep 10
           done || exit 1
 
   deploy:
@@ -157,13 +152,8 @@ jobs:
       - name: Check Logs
         run: docker logs td-devops_app_1 || true
 
-      - name: Debug SSL Certificate
-        run: |
-          openssl s_client -connect ${{ vars.PWD }}-3000.direct.labs.play-with-docker.com:443 -showcerts
-
-
       - name: Health Check
         run: |
           for i in {1..5}; do 
-          wget --secure-protocol=TLSv1_2 --no-check-certificate "https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com" && break || sleep 10
+          wget --secure-protocol=TLSv1_2 --no-check-certificate "http://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com" && break || sleep 10
           done || exit 1
