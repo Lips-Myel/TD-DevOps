@@ -114,7 +114,7 @@ jobs:
         run: docker-compose -f compose.staging.yml down || true
 
       - name: Start New Staging Container
-        run: docker-compose --force-recreate compose.staging.yml up -d -p 443:443 -p 3000:3000
+        run: docker-compose -f compose.staging.yml up -d
 
       - name: Check Logs
         run: docker logs td-devops_app_1 || true
@@ -150,7 +150,7 @@ jobs:
         run: docker-compose -f compose.prod.yml down || true
 
       - name: Start New Production Container
-        run: docker-compose --force-recreate compose.prod.yml up -d -p 443:443 -p 3000:3000
+        run: docker-compose -f compose.prod.yml up -d
 
       - name: Check Logs
         run: docker logs td-devops_app_1 || true
