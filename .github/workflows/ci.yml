@@ -121,11 +121,8 @@ jobs:
 
       - name: Health Check
         run: |
-          echo "${{ secrets.CLIENT_PEM }}" > client.pem
-          echo "${{ secrets.C_KEY }}" > key.pem
-          chmod 600 client.pem key.pem
           for i in {1..5}; do 
-          wget --no-check-certificate --cert client.pem --key key.pem "https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com" && break || sleep 10
+          wget "https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com" && break || sleep 10
           done || exit 1
 
   deploy:
@@ -157,9 +154,6 @@ jobs:
 
       - name: Health Check
         run: |
-          echo "${{ secrets.CLIENT_PEM }}" > client.pem
-          echo "${{ secrets.C_KEY }}" > key.pem
-          chmod 600 client.pem key.pem
           for i in {1..5}; do 
-          wget --no-check-certificate --cert client.pem --key key.pem "https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com" && break || sleep 10
+          wget "https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com" && break || sleep 10
           done || exit 1
