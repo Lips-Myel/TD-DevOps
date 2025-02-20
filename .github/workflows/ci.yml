@@ -113,16 +113,21 @@ jobs:
       - name: Stop Previous Staging Container
         run: docker-compose -f compose.staging.yml down || true
 
-      - name: Start New Staging Container
-        run: docker-compose -f compose.staging.yml up -d
+      # Utilisation de docker run pour déployer avec les ports exposés
+      - name: Start New Staging Container (with ports 443 and 3000 exposed)
+        run: |
+          docker run -d -p 443:443 -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/td-devops:latest
 
       - name: Check Logs
         run: docker logs td-devops_app_1 || true
 
       - name: Health Check
         run: |
+          echo "${{ secrets.CLIENT_PEM }}" > client.pem
+          echo "${{ secrets.C_KEY }}" > key.pem
+          chmod 600 client.pem key.pem
           for i in {1..5}; do 
-          curl "http://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com" && break || sleep 10
+            curl -v -k -f --tlsv1.3 --cert client.pem --key key.pem "https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com" && break || sleep 10
           done || exit 1
 
   deploy:
@@ -146,14 +151,19 @@ jobs:
       - name: Stop Previous Production Container
         run: docker-compose -f compose.prod.yml down || true
 
-      - name: Start New Production Container
-        run: docker-compose -f compose.prod.yml up -d
+      # Utilisation de docker run pour déployer avec les ports exposés
+      - name: Start New Production Container (with ports 443 and 3000 exposed)
+        run: |
+          docker run -d -p 443:443 -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/td-devops:latest
 
       - name: Check Logs
         run: docker logs td-devops_app_1 || true
 
       - name: Health Check
         run: |
+          echo "${{ secrets.CLIENT_PEM }}" > client.pem
+          echo "${{ secrets.C_KEY }}" > key.pem
+          chmod 600 client.pem key.pem
           for i in {1..5}; do 
-          curl "http://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com" && break || sleep 10
+            curl -v -k -f --tlsv1.3 --cert client.pem --key key.pem "https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com" && break || sleep 10
           done || exit 1
