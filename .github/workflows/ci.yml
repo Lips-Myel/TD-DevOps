@@ -113,10 +113,12 @@ jobs:
       - name: Stop Previous Staging Container
         run: docker-compose -f compose.staging.yml down || true
 
-      # Utilisation de docker run pour déployer avec les ports exposés
-      - name: Start New Staging Container (with ports 443 and 3000 exposed)
+      - name: Start New Production Container (with ports 443 and 3000 exposed)
         run: |
-          docker run -d -p 443:443 -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/td-devops:latest
+          docker run -d -p 443:443 -p 3000:3000 my-container
+
+      - name: Start New Staging Container
+        run: docker-compose -f compose.staging.yml up -d -p 443:443 -p 3000:3000
 
       - name: Check Logs
         run: docker logs td-devops_app_1 || true
@@ -151,10 +153,8 @@ jobs:
       - name: Stop Previous Production Container
         run: docker-compose -f compose.prod.yml down || true
 
-      # Utilisation de docker run pour déployer avec les ports exposés
-      - name: Start New Production Container (with ports 443 and 3000 exposed)
-        run: |
-          docker run -d -p 443:443 -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/td-devops:latest
+      - name: Start New Production Container
+        run: docker-compose -f compose.prod.yml up -d -p 443:443 -p 3000:3000
 
       - name: Check Logs
         run: docker logs td-devops_app_1 || true
