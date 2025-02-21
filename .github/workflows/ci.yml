@@ -14,22 +14,6 @@ env:
   DOCKER_DRIVER: overlay2
 
 jobs:
-  name: CI/CD Pipeline
-
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
-
-env:
-  DEPLOY: "https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
-  DOCKER_HOST: "tcp://${{ vars.PWD }}.direct.labs.play-with-docker.com:2375"
-  DOCKER_DRIVER: overlay2
-
-jobs:
   build:
     runs-on: ubuntu-latest
     steps:
