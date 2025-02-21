@@ -107,8 +107,8 @@ jobs:
 
       - name: Set Docker Environment
         run: |
-          echo "DOCKER_HOST=tcp://${{ vars.PWD }}.direct.labs.play-with-docker.com:2375" >> $GITHUB_ENV
-          echo "DOCKER_DRIVER=vfs" >> $GITHUB_ENV
+          echo "DOCKER_HOST=tcp://${{ vars.PWD }}.direct.labs.play-with-docker.com:2375"
+          echo "DOCKER_DRIVER=overlay2"
 
       - name: Pull Docker Image
         run: |
@@ -148,8 +148,8 @@ jobs:
 
       - name: Set Docker Environment
         run: |
-          echo "DOCKER_HOST=tcp://${{ vars.PWD }}.direct.labs.play-with-docker.com:2375" >> $GITHUB_ENV
-          echo "DOCKER_DRIVER=vfs" >> $GITHUB_ENV
+          echo "DOCKER_HOST=tcp://${{ vars.PWD }}.direct.labs.play-with-docker.com:2375"
+          echo "DOCKER_DRIVER=overlay2"
 
       - name: Pull Docker Image
         run: |
