@@ -130,7 +130,7 @@ jobs:
           echo "${{ secrets.C_KEY }}" > key.pem
           chmod 600 client.pem key.pem
           for i in {1..5}; do 
-            curl -v -k -f --insecure --tlsv1.3 --cert client.pem --key key.pem "https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com" && break || sleep 10
+            curl -v -k -f --tlsv1.2 --cert client.pem --key key.pem "https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com" && break || sleep 10
           done || exit 1
 
   deploy:
@@ -171,5 +171,5 @@ jobs:
           echo "${{ secrets.C_KEY }}" > key.pem
           chmod 600 client.pem key.pem
           for i in {1..5}; do 
-            curl -v -k -f --insecure --tlsv1.3 --cert client.pem --key key.pem "https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com" && break || sleep 10
+            curl -v -k -f --tlsv1.2 --cert client.pem --key key.pem "https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com" && break || sleep 10
           done || exit 1
