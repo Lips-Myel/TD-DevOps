@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     container: node:20.9-alpine
     env:
-      PWD: ${{ secrets.PWD }}  # Assurez-vous que cette variable est définie dans GitHub Secrets
+      PWD: ${{ vars.PWD }}  # Assurez-vous que cette variable est définie dans GitHub Secrets
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
@@ -31,7 +31,7 @@ jobs:
     needs: build
     container: node:20.9-alpine
     env:
-      PWD: ${{ secrets.PWD }}
+      PWD: ${{ vars.PWD }}
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest 
     needs: test
     env:
-      PWD: ${{ secrets.PWD }} 
+      PWD: ${{ vars.PWD }} 
     steps:
       - uses: actions/checkout@v4
       - name: Build and push Docker image
@@ -81,13 +81,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: package
     env:
-      PWD: ${{ secrets.PWD }}
+      PWD: ${{ vars.PWD }}
     steps:
       - uses: actions/checkout@v4
       - name: Deploy to Staging
         run: |
-          DEPLOY="https://${{ secrets.PWD }}-3000.direct.labs.play-with-docker.com"
-          DOCKER_HOST="tcp://${{ secrets.PWD }}.direct.labs.play-with-docker.com:2375"
+          DEPLOY="https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
+          DOCKER_HOST="tcp://${{ vars.PWD }}.direct.labs.play-with-docker.com:2375"
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
           docker pull ${{ secrets.DOCKER_REGISTRY }}/app:latest
           docker compose -f compose.staging.yml down || true
@@ -100,13 +100,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: package
     env:
-      PWD: ${{ secrets.PWD }}
+      PWD: ${{ vars.PWD }}
     steps:
       - uses: actions/checkout@v4
       - name: Deploy to Production
         run: |
-          DEPLOY="https://${{ secrets.PWD }}-3000.direct.labs.play-with-docker.com"
-          DOCKER_HOST="tcp://${{ secrets.PWD }}.direct.labs.play-with-docker.com:2375"
+          DEPLOY="https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
+          DOCKER_HOST="tcp://${{ vars.PWD }}.direct.labs.play-with-docker.com:2375"
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
           docker pull ${{ secrets.DOCKER_REGISTRY }}/app:latest
           docker compose -f compose.prod.yml down || true
