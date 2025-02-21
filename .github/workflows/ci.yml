@@ -94,7 +94,10 @@ jobs:
           docker compose -f compose.staging.yml up -d
           echo "App deployed at => $DEPLOY"
           docker logs td-devops-app-1 || true
-          for i in {1..5}; do curl -k -f "$DEPLOY" && break || sleep 10; done || exit 1
+          echo "${{ secrets.CLIENT_PEM }}" > client.pem
+          echo "${{ secrets.C_KEY }}" > key.pem
+          chmod 600 client.pem key.pem
+          for i in {1..5}; do curl -v -k -f --cert client.pem --key key.pem "$DEPLOY" && break || sleep 10; done || exit 1
 
   production:
     runs-on: ubuntu-latest
@@ -114,4 +117,7 @@ jobs:
           docker compose -f compose.prod.yml up -d
           echo "App deployed at => $DEPLOY"
           docker logs td-devops-app-1 || true 
-          for i in {1..5}; do curl -k -f "$DEPLOY" && break || sleep 10; done || exit 1
+          echo "${{ secrets.CLIENT_PEM }}" > client.pem
+          echo "${{ secrets.C_KEY }}" > key.pem
+          chmod 600 client.pem key.pem
+          for i in {1..5}; do curl -v -k -f --cert client.pem --key key.pem"$DEPLOY" && break || sleep 10; done || exit 1
