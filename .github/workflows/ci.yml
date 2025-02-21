@@ -122,7 +122,7 @@ jobs:
         run: docker-compose -f compose.staging.yml up -d
 
       - name: Check Logs
-        run: docker logs td-devops_app_1 || true
+        run: docker logs td-devops-app || true
 
       - name: Health Check
         run: |
@@ -163,7 +163,7 @@ jobs:
         run: docker-compose -f compose.prod.yml up -d
 
       - name: Check Logs
-        run: docker logs td-devops_app_1 || true
+        run: docker logs td-devops-app || true
 
       - name: Health Check
         run: |
