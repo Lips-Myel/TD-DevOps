@@ -5,171 +5,122 @@ on:
     branches:
       - main
   pull_request:
+    branches:
+      - main
 
 jobs:
   build:
-    name: Install Dependencies
     runs-on: ubuntu-latest
+    env:
+      DEPLOY: "https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
+      DOCKER_HOST: "tcp://${{ vars.PWD }}.direct.labs.play-with-docker.com:2375"
+      DOCKER_DRIVER: overlay2
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Install Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: 20
+          node-version: '20.9'
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: npm install
 
-      - name: Cache Dependencies
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      - name: Run build
+        run: npm run build
 
   lint:
-    name: Run ESLint
     runs-on: ubuntu-latest
     needs: build
+    env:
+      DEPLOY: "https://${{ vars.PWD }}.direct.labs.play-with-docker.com"
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Restore Dependencies Cache
-        uses: actions/cache@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
         with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          node-version: '20.9'
 
       - name: Run ESLint
         run: |
-          chmod +x node_modules/.bin/eslint
           npm run lint
-        continue-on-error: true
 
   test:
-    name: Run Jest Tests
     runs-on: ubuntu-latest
     needs: build
+    env:
+      DEPLOY: "https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Restore Dependencies Cache
-        uses: actions/cache@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
         with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          node-version: '20.9'
 
-      - name: Run Jest Tests
+      - name: Run tests
         run: |
-          chmod +x node_modules/.bin/jest
-          npx jest --ci --reporters=jest-junit
-        continue-on-error: false
+          npx jest
 
-      - name: Upload Test Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: test-results.xml
-
-  package:
-    name: Build & Push Docker Image
+  docker_build:
     runs-on: ubuntu-latest
-    needs: test
+    needs: build
+    env:
+      DEPLOY: "https://${{ vars.PWD }}.direct.labs.play-with-docker.com"
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Login to Docker Hub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
 
-      - name: Build and Push Docker Image
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/td-devops:latest .
-          docker push ${{ secrets.DOCKER_USERNAME }}/td-devops:latest
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/app:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/app:latest
 
   staging:
-    name: Deploy to Staging
     runs-on: ubuntu-latest
-    needs: package
+    needs: docker_build
+    env:
+      DEPLOY: "https://${{ vars.PWD }}.direct.labs.play-with-docker.com"
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Install Docker Compose
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Deploy to staging
         run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
-
-      - name: Set Docker Environment
-        run: |
-          echo "DOCKER_HOST=tcp://${{ vars.PWD }}.direct.labs.play-with-docker.com:2375"
-          echo "DOCKER_DRIVER=overlay2"
-
-      - name: Pull Docker Image
-        run: |
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          docker pull ${{ secrets.DOCKER_USERNAME }}/td-devops:latest
-
-      - name: Stop Previous Staging Container
-        run: docker-compose -f compose.staging.yml down || true
-
-      - name: Start New Staging Container
-        run: docker-compose -f compose.staging.yml up -d
-
-      - name: Check Logs
-        run: docker logs td-devops_app_1 || true
-
-      - name: Health Check
-        run: |
-          echo "${{ secrets.CLIENT_PEM }}" > client.pem
-          echo "${{ secrets.C_KEY }}" > key.pem
-          chmod 600 client.pem key.pem
-          for i in {1..5}; do 
-            curl -v -k -f --cert client.pem --key key.pem "http://${{ vars.PWD }}.direct.labs.play-with-docker.com:3000" && break || sleep 10
-          done || exit 1
+          docker-compose -f compose.staging.yml up -d
+          echo "App deployed at => $DEPLOY"
+          curl --fail "$DEPLOY" || exit 1
 
   deploy:
-    name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: package
+    needs: staging
+    env:
+      DEPLOY: "https://${{ vars.PWD }}.direct.labs.play-with-docker.com"
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Install Docker Compose
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v2
+
+      - name: Deploy to production
         run: |
-          sudo apt-get update
-          sudo apt-get install -y docker-compose
-
-      - name: Set Docker Environment
-        run: |
-          echo "DOCKER_HOST=tcp://${{ vars.PWD }}.direct.labs.play-with-docker.com:2375"
-          echo "DOCKER_DRIVER=overlay2"
-
-      - name: Pull Docker Image
-        run: |
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          docker pull ${{ secrets.DOCKER_USERNAME }}/td-devops:latest
-
-      - name: Stop Previous Production Container
-        run: docker-compose -f compose.prod.yml down || true
-
-      - name: Start New Production Container
-        run: docker-compose -f compose.prod.yml up -d
-
-      - name: Check Logs
-        run: docker logs td-devops_app_1 || true
-
-      - name: Health Check
-        run: |
-          echo "${{ secrets.CLIENT_PEM }}" > client.pem
-          echo "${{ secrets.C_KEY }}" > key.pem
-          chmod 600 client.pem key.pem
-          for i in {1..5}; do 
-            curl -v -k -f --cert client.pem --key key.pem "https://${{ vars.PWD }}.direct.labs.play-with-docker.com:3000" && break || sleep 10
-          done || exit 1
+          docker-compose -f compose.prod.yml up -d
+          echo "App deployed at => $DEPLOY"
+          curl --fail "$DEPLOY" || exit 1
