@@ -86,7 +86,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Deploy to Staging
         run: |
-          DEPLOY="https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
+          DEPLOY="http://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
           DOCKER_HOST="tcp://${{ vars.PWD }}.direct.labs.play-with-docker.com:2375"
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
           docker pull ${{ secrets.DOCKER_REGISTRY }}/app:latest
@@ -105,7 +105,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Deploy to Production
         run: |
-          DEPLOY="https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
+          DEPLOY="http://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
           DOCKER_HOST="tcp://${{ vars.PWD }}.direct.labs.play-with-docker.com:2375"
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
           docker pull ${{ secrets.DOCKER_REGISTRY }}/app:latest
