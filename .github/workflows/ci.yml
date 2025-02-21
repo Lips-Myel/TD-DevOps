@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: npm install
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -48,7 +48,7 @@ jobs:
           chmod +x node_modules/.bin/jest
           npx jest --ci --reporters=jest-junit
       - name: Upload test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: test-results.xml
@@ -132,74 +132,3 @@ jobs:
             echo "Retrying..."
             sleep 10
           done || exit 1
-
-
-
-  lint:
-    runs-on: ubuntu-latest
-    needs: build
-    container: node:20.9-alpine
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run ESLint
-        run: |
-          chmod +x node_modules/.bin/eslint
-          npm run lint
-
-  test:
-    runs-on: ubuntu-latest
-    needs: build
-    container: node:20.9-alpine
-    steps:
-      - uses: actions/checkout@v3
-      - name: Run Jest tests
-        run: |
-          chmod +x node_modules/.bin/jest
-          npx jest --ci --reporters=jest-junit
-      - name: Upload test results
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-results
-          path: test-results.xml
-
-  package:
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build and push Docker image
-        run: |
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          docker build -t ${{ secrets.DOCKER_REGISTRY }}/app:latest .
-          docker push ${{ secrets.DOCKER_REGISTRY }}/app:latest
-
-  staging:
-    runs-on: ubuntu-latest
-    needs: package
-    steps:
-      - uses: actions/checkout@v4
-      - name: Deploy to Staging
-        run: |
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          docker pull ${{ secrets.DOCKER_REGISTRY }}/app:latest
-          docker compose -f compose.staging.yml down || true
-          docker compose -f compose.staging.yml up -d
-          echo "App deployed at => $DEPLOY"
-          docker logs td-devops-app-1 || true
-          for i in {1..5}; do curl -f "$DEPLOY" && break || sleep 10; done || exit 1
-
-  production:
-    runs-on: ubuntu-latest
-    needs: package
-    steps:
-      - uses: actions/checkout@v4
-      - name: Deploy to Production
-        run: |
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-          docker pull ${{ secrets.DOCKER_REGISTRY }}/app:latest
-          docker compose -f compose.prod.yml down || true
-          docker network rm td-devops_default || true
-          docker compose -f compose.prod.yml up -d
-          echo "App deployed at => $DEPLOY"
-          docker logs td-devops-app-1 || true
-          for i in {1..5}; do curl -f "$DEPLOY" && break || sleep 10; done || exit 1
