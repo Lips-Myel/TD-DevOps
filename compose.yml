@@ -33,9 +33,3 @@ services:
       - "traefik.http.routers.app.tls.certificates[0].keyFile=/certs/client.key.pem"  # Chemin vers votre clé privée
     expose:
       - "3000"   # Expose le port interne 3000 de votre app (accessible seulement par Traefik)
-    networks:
-      - web
-
-networks:
-  web:
-    external: true  # Utiliser un réseau externe pour que Traefik et l'app puissent se connecter
