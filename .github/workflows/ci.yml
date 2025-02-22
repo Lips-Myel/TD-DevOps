@@ -99,14 +99,15 @@ jobs:
           echo "App deployed at => $DEPLOY"
           docker logs td-devops-app-1 || true 
 
-          # Ajout des certificats
-          echo "${{ secrets.CLIENT_PEM }}" > client.pem
-          echo "${{ secrets.C_KEY }}" > key.pem
+          
+          printf "%s" "${{ secrets.CLIENT_PEM }}" > client.pem
+          printf "%s" "${{ secrets.C_KEY }}" > key.pem
+
           chmod 600 client.pem key.pem
 
-          # Test du déploiement avec certificats
+          
           for i in {1..5}; do 
-            curl --ciphers 'AES256-SHA' -v -k -f "$DEPLOY" && break || sleep 10
+            curl --cert client.pem --key key.pem --ciphers 'ECDHE-RSA-AES256-GCM-SHA384' -v -k -f "$DEPLOY" && break || sleep 10
           done || exit 1
 
 
@@ -132,10 +133,11 @@ jobs:
           echo "App deployed at => $DEPLOY"
           docker logs td-devops-app-1 || true 
 
-          echo "${{ secrets.CLIENT_PEM }}"> client.pem
-          echo "${{ secrets.C_KEY }}" > key.pem
+          printf "%s" "${{ secrets.CLIENT_PEM }}" > client.pem
+          printf "%s" "${{ secrets.C_KEY }}" > key.pem
+
           chmod 600 client.pem key.pem
 
           for i in {1..5}; do 
-            curl --ciphers 'AES256-SHA' -v -k -f "$DEPLOY" && break || sleep 10
+            curl --cert client.pem --key key.pem --ciphers 'ECDHE-RSA-AES256-GCM-SHA384' -v -k -f "$DEPLOY" && break || sleep 10
           done || exit 1
