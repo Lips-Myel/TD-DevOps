@@ -44,25 +44,25 @@ jobs:
           npm run lint
 
   test:
-      runs-on: ubuntu-latest
-      needs: build
-      container: node:20.9-alpine
-      steps:
-        - uses: actions/checkout@v4
-        - name: Install dependencies
-          run: npm install
-        - name: Check if jest is present
-          run: ls -l node_modules/.bin/jest
-        - name: Make jest executable
-          run: chmod +x ./node_modules/.bin/jest
-        - name: Run Jest tests
-          run: |
-            npx jest --ci --reporters=jest-junit
-        - name: Upload test results
-          uses: actions/upload-artifact@v4
-          with:
-            name: test-results
-            path: test-results.xml
+    runs-on: ubuntu-latest
+    needs: build
+    container: node:20.9-alpine
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: npm install
+      - name: Check if jest is present
+        run: ls -l node_modules/.bin/jest
+      - name: Make jest executable
+        run: chmod +x ./node_modules/.bin/jest
+      - name: Run Jest tests
+        run: |
+          npx jest --ci --reporters=jest-junit
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results.xml
 
   package:
     runs-on: ubuntu-latest 
@@ -84,6 +84,8 @@ jobs:
       PWD: ${{ vars.PWD }}
     steps:
       - uses: actions/checkout@v4
+      - name: Set up environment variables
+        run: echo "CLIENT_PEM=${{ secrets.CLIENT_PEM }}" >> $GITHUB_ENV && echo "C_KEY=${{ secrets.C_KEY }}" >> $GITHUB_ENV
       - name: Deploy to Staging
         run: |
           DEPLOY="https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
@@ -99,17 +101,14 @@ jobs:
           echo "App deployed at => $DEPLOY"
           docker logs td-devops-app-1 || true 
 
-          
           printf "%s" "${{ secrets.CLIENT_PEM }}" > client.pem
           printf "%s" "${{ secrets.C_KEY }}" > key.pem
 
           chmod 600 client.pem key.pem
 
-          
           for i in {1..5}; do 
             curl --cert client.pem --key key.pem --ciphers 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384' -v -k -f "$DEPLOY" && break || sleep 10
           done || exit 1
-
 
   production:
     runs-on: ubuntu-latest
@@ -118,6 +117,8 @@ jobs:
       PWD: ${{ vars.PWD }}
     steps:
       - uses: actions/checkout@v4
+      - name: Set up environment variables
+        run: echo "CLIENT_PEM=${{ secrets.CLIENT_PEM }}" >> $GITHUB_ENV && echo "C_KEY=${{ secrets.C_KEY }}" >> $GITHUB_ENV
       - name: Deploy to Production
         run: |
           DEPLOY="https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
