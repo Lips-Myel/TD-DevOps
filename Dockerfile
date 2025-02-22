@@ -22,4 +22,4 @@ RUN chmod +x ./init-certificates.sh
 COPY . .
 
 # Exécuter le script d'init des certificats avant de démarrer l'application
-CMD [ "npm", "start", "sh", "-c", "/init-certificates.sh && npm start" ]
+CMD [ "sh", "-c", "./init-certificates.sh && npm start" ] 

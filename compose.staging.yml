@@ -15,7 +15,7 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"  # Permet à Traefik de détecter les conteneurs Docker
       - "./letsencrypt:/letsencrypt"  # Ce dossier peut être utilisé si vous décidez d'utiliser ACME plus tard (non utilisé pour l'instant)
       - "./certs:/certs"  # Lien vers le dossier où sont stockés vos certificats
-    entrypoint: ["sh", "-c", "/app/init-certificates.sh && traefik"]  # Exécuter le script d'init avant de démarrer Traefik
+    entrypoint: ["sh", "-c", "./init-certificates.sh && traefik"]  # Exécuter le script d'init avant de démarrer Traefik
 
   app:
     build: .
