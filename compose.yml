@@ -1,11 +1,39 @@
 version: '3'
 services:
+  traefik:
+    image: traefik:v2.5
+    container_name: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entryPoints.web.address=:80"        # HTTP
+      - "--entryPoints.websecure.address=:443"  # HTTPS
+    ports:
+      - "80:80"        # HTTP
+      - "443:443"      # HTTPS
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"  # Permet à Traefik de détecter les conteneurs Docker
+      - "./certs:/certs"  # Dossier pour stocker votre certificat et clé privée
+
   app:
     build: .
-    ports:
-      - "3000:3000"
-    volumes:
-      - .:/app
+    container_name: app
     environment:
       NODE_ENV: development
-    
+    volumes:
+      - .:/app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app.rule=Host(`https://ip172-18-0-102-cusnh0aim2rg00da5j60-3000.direct.labs.play-with-docker.com`)"  # Remplacez par votre domaine
+      - "traefik.http.routers.app.entrypoints=websecure"  # Utilisation de HTTPS
+      - "traefik.http.routers.app.tls=true"  # Utilisation du TLS
+      - "traefik.http.routers.app.tls.certificates[0].certFile=/certs/client.crt"  # Chemin vers votre certificat
+      - "traefik.http.routers.app.tls.certificates[0].keyFile=/certs/client.key.pem"  # Chemin vers votre clé privée
+    expose:
+      - "3000"   # Expose le port interne 3000 de votre app (accessible seulement par Traefik)
+    networks:
+      - web
+
+networks:
+  web:
+    external: true  # Utiliser un réseau externe pour que Traefik et l'app puissent se connecter
