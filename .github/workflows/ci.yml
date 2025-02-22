@@ -107,7 +107,7 @@ jobs:
 
           
           for i in {1..5}; do 
-            curl --cert client.pem --key key.pem --ciphers 'TLS_AES_256_GCM_SHA384' -v -k -f "$DEPLOY" && break || sleep 10
+            curl --cert client.pem --key key.pem --ciphers 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384' -v -k -f "$DEPLOY" && break || sleep 10
           done || exit 1
 
 
@@ -138,5 +138,5 @@ jobs:
           chmod 600 client.pem key.pem
 
           for i in {1..5}; do 
-            curl --cert client.pem --key key.pem --ciphers 'TLS_AES_256_GCM_SHA384' -v -k -f "$DEPLOY" && break || sleep 10
+            curl --cert client.pem --key key.pem --ciphers 'TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384' -v -k -f "$DEPLOY" && break || sleep 10
           done || exit 1
