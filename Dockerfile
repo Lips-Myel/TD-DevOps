@@ -15,8 +15,8 @@ RUN apk update && \
     update-ca-certificates
 
 # Copier le script d'initialisation des certificats dans le conteneur
-COPY init-certificates.sh /init-certificates.sh
-RUN chmod +x /init-certificates.sh
+COPY init-certificates.sh ./init-certificates.sh
+RUN chmod +x ./init-certificates.sh
 
 # Copier tout le reste du code source dans le conteneur
 COPY . .
