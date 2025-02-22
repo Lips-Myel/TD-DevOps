@@ -88,16 +88,27 @@ jobs:
         run: |
           DEPLOY="https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
           DOCKER_HOST="tcp://${{ vars.PWD }}.direct.labs.play-with-docker.com:2375"
+
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
           docker pull ${{ secrets.DOCKER_REGISTRY }}/app:latest
-          docker compose -f compose.staging.yml down || true
-          docker compose -f compose.staging.yml up -d
+
+          docker compose -f compose.prod.yml down || true
+          docker network rm td-devops_default || true
+          docker compose -f compose.prod.yml up -d
+
           echo "App deployed at => $DEPLOY"
-          docker logs td-devops-app-1 || true
-          echo "${{ secrets.CLIENT_PEM }}" > client.pem
-          echo "${{ secrets.C_KEY }}" > key.pem
+          docker logs td-devops-app-1 || true 
+
+          # Ajout des certificats
+          echo "${{ secrets.CLIENT_PEM }}" | base64 --decode > client.pem
+          echo "${{ secrets.C_KEY }}" | base64 --decode > key.pem
           chmod 600 client.pem key.pem
-          for i in {1..5}; do curl -v -k -f --ciphers "$DEPLOY" && break || sleep 10; done || exit 1
+
+          # Test du déploiement avec certificats
+          for i in {1..5}; do 
+            curl --cert client.pem --key key.pem --ciphers 'AES256-SHA' -v -k -f "$DEPLOY" && break || sleep 10
+          done || exit 1
+
 
   production:
     runs-on: ubuntu-latest
@@ -110,14 +121,21 @@ jobs:
         run: |
           DEPLOY="https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
           DOCKER_HOST="tcp://${{ vars.PWD }}.direct.labs.play-with-docker.com:2375"
+
           echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
           docker pull ${{ secrets.DOCKER_REGISTRY }}/app:latest
+
           docker compose -f compose.prod.yml down || true
           docker network rm td-devops_default || true
           docker compose -f compose.prod.yml up -d
+
           echo "App deployed at => $DEPLOY"
           docker logs td-devops-app-1 || true 
-          echo "${{ secrets.CLIENT_PEM }}" > client.pem
-          echo "${{ secrets.C_KEY }}" > key.pem
+
+          echo "${{ secrets.CLIENT_PEM }}" | base64 --decode > client.pem
+          echo "${{ secrets.C_KEY }}" | base64 --decode > key.pem
           chmod 600 client.pem key.pem
-          for i in {1..5}; do curl -v -k -f --ciphers "$DEPLOY" && break || sleep 10; done || exit 1
+
+          for i in {1..5}; do 
+            curl --cert client.pem --key key.pem --ciphers 'AES256-SHA' -v -k -f "$DEPLOY" && break || sleep 10
+          done || exit 1
