@@ -106,7 +106,7 @@ jobs:
 
           # Test du déploiement avec certificats
           for i in {1..5}; do 
-            curl --cert client.pem --key key.pem --ciphers 'AES256-SHA' -v -k -f "$DEPLOY" && break || sleep 10
+            curl --ciphers 'AES256-SHA' -v -k -f "$DEPLOY" && break || sleep 10
           done || exit 1
 
 
@@ -137,5 +137,5 @@ jobs:
           chmod 600 client.pem key.pem
 
           for i in {1..5}; do 
-            curl --cert client.pem --key key.pem --ciphers 'AES256-SHA' -v -k -f "$DEPLOY" && break || sleep 10
+            curl --ciphers 'AES256-SHA' -v -k -f "$DEPLOY" && break || sleep 10
           done || exit 1
