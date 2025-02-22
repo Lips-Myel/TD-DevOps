@@ -97,7 +97,7 @@ jobs:
           echo "${{ secrets.CLIENT_PEM }}" > client.pem
           echo "${{ secrets.C_KEY }}" > key.pem
           chmod 600 client.pem key.pem
-          for i in {1..5}; do curl --ciphers -v -k -f "$DEPLOY" && break || sleep 10; done || exit 1
+          for i in {1..5}; do curl --ciphers -k -f "$DEPLOY" && break || sleep 10; done || exit 1
 
   production:
     runs-on: ubuntu-latest
@@ -120,4 +120,4 @@ jobs:
           echo "${{ secrets.CLIENT_PEM }}" > client.pem
           echo "${{ secrets.C_KEY }}" > key.pem
           chmod 600 client.pem key.pem
-          for i in {1..5}; do curl --ciphers -v -k -f "$DEPLOY" && break || sleep 10; done || exit 1
+          for i in {1..5}; do curl --ciphers -k -f "$DEPLOY" && break || sleep 10; done || exit 1
