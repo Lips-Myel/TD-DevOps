@@ -85,7 +85,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up environment variables
-        run: echo "CLIENT_PEM=${{ secrets.CLIENT_PEM }}" >> $GITHUB_ENV && echo "C_KEY=${{ secrets.C_KEY }}" >> $GITHUB_ENV
+        run: echo "CLIENT_PEM=${{ secrets.CLIENT_PEM }}" && echo "C_KEY=${{ secrets.C_KEY }}"
       - name: Deploy to Staging
         run: |
           DEPLOY="https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
@@ -118,7 +118,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up environment variables
-        run: echo "CLIENT_PEM=${{ secrets.CLIENT_PEM }}" >> $GITHUB_ENV && echo "C_KEY=${{ secrets.C_KEY }}" >> $GITHUB_ENV
+        run: echo "CLIENT_PEM=${{ secrets.CLIENT_PEM }}" && echo "C_KEY=${{ secrets.C_KEY }}"
       - name: Deploy to Production
         run: |
           DEPLOY="https://${{ vars.PWD }}-3000.direct.labs.play-with-docker.com"
