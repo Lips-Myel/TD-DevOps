@@ -15,11 +15,11 @@ RUN apk update && \
     update-ca-certificates
 
 # Copier le script d'initialisation des certificats dans le conteneur
-COPY init-certificates.sh /app/init-certificates.sh
-RUN chmod +x /app/init-certificates.sh
+COPY init-certificates.sh /init-certificates.sh
+RUN chmod +x /init-certificates.sh
 
 # Copier tout le reste du code source dans le conteneur
 COPY . .
 
 # Exécuter le script d'init des certificats avant de démarrer l'application
-CMD [ "npm", "start", "sh", "-c", "/app/init-certificates.sh && npm start" ]
+CMD [ "npm", "start", "sh", "-c", "/init-certificates.sh && npm start" ]
